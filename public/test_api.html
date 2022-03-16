@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>API Test | Assignment 4</title>
+
+    <!-- These two lines provide automatic page and style reloading when files change -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/lib/client/updater.js" defer></script>
+
+    <link rel="stylesheet" href="test_api.css">
+    <script type="module" src="test_api.js"></script>
+  </head>
+  <body>
+    <h1>API Test</h1>
+    <form id="form">
+      <label>Endpoint: <select name="endpoint" id="endpoint">
+        <option>GET /users</option>
+        <option>GET /users/:id</option>
+        <option>POST /users</option>
+        <option>PATCH /users/:id</option>
+        <option>GET /users/:id/feed</option>
+        <option>POST /users/:id/posts</option>
+        <option>POST /users/:id/follow</option>
+        <option>DELETE /users/:id/follow</option>
+      </select></label><br>
+      <label id="idParam">ID: <input name="id"></label><br>
+      <label id="targetParam">Target: <input name="target"></label><br>
+      <label>Body: (JSON string, or blank for no body)<br>
+        <textarea name="body"></textarea>
+      </label><br>
+      <label><input type="checkbox" name="remote"> Use remote (assignment 3) API</label><br>
+      <button type="submit">Send</button>
+    </form>
+  </body>
+</html>
