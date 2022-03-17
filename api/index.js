@@ -6,11 +6,8 @@ import { MongoClient } from "mongodb";
 let DATABASE_NAME = "cs193x_assign4";
 let conn = null;
 let db = null;
-let Users = null;
 let Posts = null;
-
-/* Do not modify or remove this line. It allows us to change the database for grading */
-if (process.env.DATABASE_NAME) DATABASE_NAME = process.env.DATABASE_NAME;
+let Tags = null;
 
 const api = express.Router();
 
@@ -21,8 +18,7 @@ const initAPI = async app => {
   conn = await MongoClient.connect("mongodb://localhost");
   db = conn.db(DATABASE_NAME);
 
-  Users = db.collection("users");
-  Posts = db.collection("posts");
+  Tags = db.collection("tags");
 };
 
 api.use(bodyParser.json());
@@ -32,130 +28,61 @@ api.get("/", (req, res) => {
   res.json({ db: DATABASE_NAME });
 });
 
-api.get("/users", async (req, res) => {
-  let users = [];
-  for (const user of await Users.find().toArray()) {
-    users.push(user.id);
+api.get("/posts", async (req, res) => {
+  let posts = [];
+  for (const post of await Tags.find().toArray()) {
+    posts.push(post.id);
   }
-  res.json({ users });
+  res.json({ posts });
 });
 
-api.post("/users", async (req, res) => {
-  if (!req.body.id) {
-    res.status(400).json({ error: "The request body needs to have an `id` attribute." });
+api.post("/posts", async (req, res) => {
+  if (!req.body.post_id) {
+    res.status(400).json({ error: "The request body needs to have an `post_id` attribute." });
   }
-  else if (await Users.count({ id: req.body.id }, { limit: 1 }) == 1) {
-    res.status(400).json({ error: `The requested user ${req.body.id} already exists.` });
+  else if (await Tags.count({ id: req.body.post_id }, { limit: 1 }) == 1) {
+    res.status(400).json({ error: `The tag ${req.body.post_id} already exists. Did you mean to create a reply?` });
   }
   else {
-    req.body.name = req.body.id;
-    req.body.avatarURL = "images/default.png";
-    req.body.following = [];
-    Users.insertOne(req.body);
-    res.json({ id: req.body.id, name: req.body.name, avatarURL: req.body.avatarURL, following: req.body.following });
+    for (const tag of req.body.tags) {
+      let foundTag = (Tags.findOne({ id: tag }));
+      if (foundTag) {
+        foundTag.posts.push(tag);
+      }
+    }
+    Tags.insertOne({ id: req.body.post_id, post: req.body, children: [] })
+    console.log(`Tags: ${Tags}`);
+    res.json({ id: req.body.post_id, tags: req.body.tags, text: req.body.text });
   }
 });
 
-api.use("/users/:id", async (req, res, next) => {
-  let id = req.params.id;
-  let user = await Users.findOne({ id });
-  if (!user) {
-    res.status(404).json({ error: `No user with ID ${id}` });
+api.use("/posts/:post_id", async (req, res, next) => {
+  let id = req.params.post_id;
+  let tag = await Tags.findOne({ id: id });
+  let post = tag.post;
+  if (!post) {
+    console.log(post);
+    res.status(404).json({ error: `The post ${id} does not exist` });
     return;
   }
-  res.locals.user = user;
+  res.locals.post = post;
   next();
 });
 
-api.get("/users/:id", async (req, res) => {
-  let user = res.locals.user;
-  delete user._id;
-  res.json( user );
+api.get("/posts/:post_id", async (req, res, next) => {
+  let post = res.locals.post;
+  delete post._id;
+  res.json( post );
 });
 
-api.get("/users/:id/feed", async (req, res) => {
-  let following = res.locals.user.following;
-  const feed = [];
-  for (const post of await Posts.find().toArray()) {
-    if (following.includes(post.userId) || req.params.id == post.userId) {
-      let user = await Users.findOne({ id: post.userId });
-      delete user._id;
-      let pushPost = post;
-      delete pushPost.userId;
-      delete pushPost._id;
-      pushPost.user = user;
-      feed.push(pushPost);
-    }
-  }
-  feed.sort((obj1, obj2) => { return obj1.time.getTime() >= obj2.time.getTime() ? -1 : 1 })
-  res.json({ posts: feed });
+api.get("/posts/:post_id/replies", async (req, res, next) => {
+  let tag = Tags.findOne({ id: req.params.id });
+  res.json( tag.posts );
 });
 
-api.post("/users/:id/posts", async (req, res) => {
-  if (!req.body.text) {
-    res.status(400).json({ error: "We either did not find a text field or found an empty text field in the body." });
-    return;
-  }
-  Posts.insertOne(new Object({ userId: res.locals.user.id, time: new Date(), text: req.body.text }));
-  res.json({ success: true });
-});
-
-api.post("/users/:id/follow", async (req, res) => {
-  if (!req.query.target) {
-    res.status(400).json({ error: "`target` is empty or non-existent." });
-  }
-  else if (req.query.target == res.locals.user.id) {
-    res.status(400).json({ error: "You can't follow yourself." });
-  }
-  else if (await Users.count({ id: req.query.target }, { limit: 1}) == 0) {
-    res.status(404).json({ error: `Could not find ${req.query.target}.` });
-  }
-  else if (res.locals.user.following.includes(req.query.target)) {
-    res.status(400).json({ error: `${res.locals.user.id} is already following ${req.query.target}.` });
-  }
-  else {
-    Users.updateOne({
-      id: res.locals.user.id
-    }, {
-      $push: { following: req.query.target }
-    });
-    res.json({ success: true });
-  }
-});
-
-api.patch("/users/:id", async (req, res) => {
-  let id = res.locals.user.id;
-  let name = 'name' in req.body ? req.body.name : res.locals.user.name;
-  let avatarURL = 'avatarURL' in req.body ? req.body.avatarURL : res.locals.user.avatarURL;
-
-  Users.updateOne({
-    id: id
-  }, {
-    $set: {
-      name: name,
-      avatarURL: avatarURL
-    }
-  });
-  let user = res.locals.user;
-  delete user._id;
-  res.json( user );
-});
-
-api.delete("/users/:id/follow", async (req, res) => {
-  if (!req.query.target) {
-    res.status(400).json({ error: "No target property, or target is empty." });
-    return;
-  }
-  else if (!(res.locals.user.following.includes(req.query.target))) {
-    res.status(400).json({ error: "The target user isn't being followed." });
-    return;
-  }
-  Users.updateOne({
-    id: res.locals.user.id
-  }, {
-    $pull: { following: req.query.target }
-  });
-  res.json({ success: true });
+api.get("/posts/:post_id/parents", async (req, res, next) => {
+  let tag = Tags.findOne({ id: req.params.id });
+  res.json( tag.tags );
 });
 
 /* Catch-all route to return a JSON error if endpoint not defined */

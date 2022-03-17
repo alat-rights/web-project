@@ -7,22 +7,22 @@
 
 .paper {
   padding: 1rem;
-  background-color: white;
-  border-radius: 0.6rem;
-  box-shadow: 1px 1px 1px 1px lightgray;
+  background-color: #FFE0B5;
+  border-radius: 0.2rem;
 }
 
 /***** Header *****/
 
 .brand {
-  color: #3b5998;
+  color: #CA2E55;
   font-weight: bold;
+  padding: 0.5rem;
 }
 
 #header {
   display: flex;
   justify-content: center;
-  background-color: white;
+  background-color: #FFE0B5;
   border-bottom: 1px solid #ccd6dd;
   margin-bottom: 1.5rem;
   padding: 0.5rem 0;
@@ -102,25 +102,6 @@
   flex-direction: column;
 }
 
-#postForm {
-  margin-top: 0;
-}
-
-#postForm .text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-#postForm button {
-  margin-top: 0.5rem;
-}
-
-#postForm textarea {
-  min-height: 4em;
-  width: 100%;
-}
-
 .post {
   display: flex;
   align-items: flex-start;
@@ -178,31 +159,31 @@
   width: 30%;
 }
 
-#editPanel h2, #followPanel h2 {
-  font-size: x-large;
-  font-weight: 300;
-}
-
-#editPanel {
-  padding: 0.5rem 1.5rem;
+#postForm {
+  margin-top: 0;
   width: 100%;
 }
 
-#editPanel > div {
+#postForm .text {
   display: flex;
   flex-direction: column;
-  margin: 1.25rem 0;
+  align-items: flex-end;
 }
 
-#editPanel label {
-  font-size: 1.25rem;
-  font-weight: normal;
-  margin-bottom: 0.75rem;
-}
-
-#followPanel {
-  padding: 0.5rem 1.5rem 1rem 1.5rem;
+#postForm .meta input {
+  max-height: 3em;
   width: 100%;
+  resize: none;
+}
+
+#postForm .text textarea {
+  min-height: 5em;
+  width: 100%;
+  resize: none;
+}
+
+#postForm button {
+  margin-top: 0.5rem;
 }
 
 /***** Animations *****/

@@ -1,17 +1,79 @@
 <!DOCTYPE html>
+<!--Inspired by Assignment 3, with some code reuse--!>
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Assignment 4</title>
+    <title>MORE_WRONG</title>
 
     <!-- These two lines provide automatic page and style reloading when files change -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="/lib/client/updater.js" defer></script>
+
+    <!-- Include the Open Sans font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap">
+
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/DynamicList.css">
+    <link rel="stylesheet" href="css/EditableText.css">
+    <link rel="stylesheet" href="css/social.css">
+
+    <script type="module" src="js/page.js"></script>
   </head>
   <body>
-    <ul>
-      <li><a href="test_api.html">API Test</a></li>
-      <li><a href="social.html">Generic Social Media App</a></li>
-    </ul>
+    <header id="header">
+      <div class="widthContainer">
+        <a class="brand" href="/">MORE_WRONG</a>
+        <form id="loginForm">
+          <input name="postId" placeholder="Post Tag">
+          <button type="submit" name="login">View Post</button>
+          <button type="button" name="listPosts" class="secondary">List Posts</button>
+        </form>
+      </div>
+    </header>
+
+    <main id="welcome">
+      <div class="paper">
+        <h1>Welcome to <strong class="brand">More_Wrong</strong></h1>
+        <h2>Tired of <a href="https://lesswrong.com">LessWrong</a>? This is your place.</h2>
+        <p>Your journey to better conversation starts here. Put in a post tag to get started. Alternatively, start with a <a href="?tag=landing">recommended article</a>.</p>
+      </div>
+    </main>
+
+    <main id="main" class="hidden">
+      <div class="widthContainer">
+        <section id="feedPanel">
+
+          <div id="templatePost" class="post paper">
+            <div>
+              <div class="postHeader">
+                <span class="author">
+                  <strong class="name"></strong>
+                  <img class="verified" src="images/verified.svg" alt="Verified">
+                  (<span class="userid"></span>)
+                </span>
+                <span class="time"></span>
+              </div>
+              <div class="text"></div>
+            </div>
+          </div>
+
+          <div id="page"></div>
+        </section>
+
+        <section id="sidebar">
+           <form id="postForm" class="post paper">
+            <div>
+              <div class="meta">
+                <input id="postTitle" placeholder="Post Tag (Describe this post in one word)"></textarea>
+              </div>
+              <div class="text">
+                <textarea id="newPost" placeholder="Share your thoughts."></textarea>
+                <button type="submit" id="postButton">Post</button>
+              </div>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
   </body>
 </html>
